@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="lab_ex_ssh (3)" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="lab_ex" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="lab">
         <serverdata>
@@ -12,7 +12,7 @@
       <paths name="lab_ex">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/Mono-Color-Cameras-Fusion" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
