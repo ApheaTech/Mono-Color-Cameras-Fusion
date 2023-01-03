@@ -27,6 +27,7 @@ def get_dataset_len(route, phase):
     elif phase == 'eval':
         # low_data_names = glob(route + phase + '/low/*.png')
         low_data_names = glob(route + 'eval15' + '/low/*.png')
+        low_data_names.sort()
         return len(low_data_names), low_data_names
     else:
         return 0, []

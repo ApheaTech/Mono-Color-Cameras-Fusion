@@ -6,7 +6,7 @@ import argparse
 from model import DecomNet, RelightNet
 from dataset import TheDataset
 from loss import DecomLoss, RelightLoss
-import tqdm
+from tqdm import tqdm
 
 import torchvision
 
@@ -67,7 +67,8 @@ def train():
                                                  num_workers=args.workers, pin_memory=True)
         decom_optim.param_groups[0]['lr'] = lr[epoch]
 
-        for data in tqdm.tqdm(dataloader):
+        pbar = tqdm(dataloader)
+        for data in pbar:
             times_per_epoch += 1
             low_im, high_im = data
             if args.use_gpu:
@@ -81,10 +82,10 @@ def train():
                                    low_im.cpu(), high_im.cpu())
             loss.backward()
             decom_optim.step()
-
             sum_loss += loss
-
-        print('decom epoch: ' + str(epoch) + ' | loss: ' + str(sum_loss / times_per_epoch))
+            pbar.set_description('Decom epoch %d loss:%.4f ' % (epoch, loss.item()))
+        pbar.close()
+        # print('decom epoch: ' + str(epoch) + ' | loss: ' + str(sum_loss / times_per_epoch))
 
         if (epoch+1) % args.save_interval == 0:
             torch.save(decom_net.state_dict(), args.ckpt_dir + '/decom_' + str(epoch) + '.pth')
@@ -94,7 +95,8 @@ def train():
     decom_net.eval()
     dataloader = torch.utils.data.DataLoader(eval_set, batch_size=16, shuffle=False,
                                              num_workers=args.workers, pin_memory=True)
-    for data in tqdm.tqdm(dataloader):
+    pbar = tqdm(dataloader)
+    for data in pbar:
         low_im = data
         if args.use_gpu:
             low_im = low_im.cuda()
@@ -102,6 +104,7 @@ def train():
             _, r_low, l_low = decom_net(low_im)
         torchvision.utils.save_image(r_low.permute(0, 3, 1, 2), './result/r_low.png', nrow=4)
         torchvision.utils.save_image(l_low.permute(0, 3, 1, 2), './result/l_low.png', nrow=4)
+    pbar.close()
 
     for epoch in range(args.epoch):
         relight_net.train()
@@ -111,7 +114,8 @@ def train():
                                                  num_workers=args.workers, pin_memory=True)
         relight_optim.param_groups[0]['lr'] = lr[epoch]
 
-        for data in tqdm.tqdm(dataloader):
+        pbar = tqdm(dataloader)
+        for data in pbar:
             times_per_epoch += 1
             low_im, high_im = data
             if args.use_gpu:
@@ -123,10 +127,10 @@ def train():
             loss = relight_criterion(l_delta.cpu(), r_low.cpu(), high_im.cpu())
             loss.backward()
             relight_optim.step()
-
             sum_loss += loss
-
-        print('relight epoch: ' + str(epoch) + ' | loss: ' + str(sum_loss / times_per_epoch))
+            pbar.set_description('Relight epoch %d loss:%.4f ' % (epoch, loss.item()))
+        pbar.close()
+        # print('relight epoch: ' + str(epoch) + ' | loss: ' + str(sum_loss / times_per_epoch))
 
         if (epoch+1) % args.save_interval == 0:
             torch.save(relight_net.state_dict(), args.ckpt_dir + '/relight_' + str(epoch) + '.pth')
@@ -136,7 +140,8 @@ def train():
     relight_net.eval()
     dataloader = torch.utils.data.DataLoader(eval_set, batch_size=16, shuffle=False,
                                              num_workers=args.workers, pin_memory=True)
-    for data in tqdm.tqdm(dataloader):
+    pbar = tqdm(dataloader)
+    for data in pbar:
         low_im = data
         if args.use_gpu:
             low_im = low_im.cuda()
@@ -145,6 +150,7 @@ def train():
             l_delta = relight_net(lr_low.detach())
         s_delta = l_delta * r_low
         torchvision.utils.save_image(s_delta.permute(0, 3, 1, 2), './result/s_delta.png', nrow=4)
+    pbar.close()
 
 
 if __name__ == '__main__':
